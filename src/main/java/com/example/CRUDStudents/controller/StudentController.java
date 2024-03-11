@@ -24,7 +24,7 @@ public class StudentController {
         return iStudentRepository.save(newstudent);
     }
 
-    @PatchMapping("/students/edit{id}")
+    @PatchMapping("/students/edit/{id}")
     public Students editStudent(@PathVariable Integer id, @RequestBody Students student){
         Optional<Students> studentsOptional = iStudentRepository.findById(id);
         if (studentsOptional.isPresent()){
