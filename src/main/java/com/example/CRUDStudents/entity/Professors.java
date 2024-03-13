@@ -1,8 +1,11 @@
 package com.example.CRUDStudents.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 @Entity
@@ -23,6 +26,21 @@ public class Professors {
 
     @Column(name = "email")
     private String email;
+
+    @Column(name="dni")
+    private String dni;
+
+    @OneToMany(mappedBy = "professor")
+    private List<Modulos> modulos;
+
+
+    public String getDni() {
+        return dni;
+    }
+
+    public void setDni(String dni) {
+        this.dni = dni;
+    }
 
     public Integer getIdProfessors() {
         return idProfessors;

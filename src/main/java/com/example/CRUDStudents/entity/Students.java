@@ -3,6 +3,8 @@ package com.example.CRUDStudents.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Entity
 @Table(name="students")
@@ -18,9 +20,29 @@ public class Students {
     @Column(name = "lastname")
     private String lastname;
 
-
     @Column(name = "email")
     private String email;
+
+    @Column(name="fecha_nac")
+    private String fechaNacimiento;
+
+    @ManyToMany
+    @JoinTable(
+            name = "student_modulo",
+            joinColumns = @JoinColumn(name = "id_student"),
+            inverseJoinColumns = @JoinColumn(name = "codigo"))
+    private List<Modulos> modulos;
+
+
+
+    public String getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+    public void setFechaNacimiento(String fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento;
+    }
+
 
     public Integer getIdStudents() {
         return idStudents;

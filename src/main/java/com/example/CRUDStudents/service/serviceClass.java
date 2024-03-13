@@ -1,8 +1,10 @@
 package com.example.CRUDStudents.service;
 
 
+import com.example.CRUDStudents.Repository.IModuloRepo;
 import com.example.CRUDStudents.Repository.IProfesorRepository;
 import com.example.CRUDStudents.Repository.IStudentRepository;
+import com.example.CRUDStudents.entity.Modulos;
 import com.example.CRUDStudents.entity.Professors;
 import com.example.CRUDStudents.entity.Students;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,9 @@ public class serviceClass {
     private IStudentRepository iStudentRepository;
     @Autowired
     private IProfesorRepository iProfessorRepository;
+
+    @Autowired
+    private IModuloRepo IModuloRepo;
 
 
     //Students
@@ -134,6 +139,34 @@ public class serviceClass {
     public Page<Professors> getAllProfessorsDefaultPage(@PageableDefault(page = 0, size = 20) Pageable pageable) {
         return iProfessorRepository.findAll(pageable);
     }
+
+ //modulo
+
+    public Modulos saveModulo(Modulos modulo) {
+        return IModuloRepo.save(modulo);
+    }
+
+    public List<Modulos> getModulos() {
+        return IModuloRepo.findAll();
+    }
+
+    public Modulos editModulo(Integer codigo, Modulos modulo) {
+        Optional<Modulos> moduloOptional = IModuloRepo.findById(codigo);
+        if (moduloOptional.isPresent()) {
+            Modulos currentModulo = moduloOptional.get();
+            currentModulo.setName(modulo.getName());
+            currentModulo.setCodModulo(modulo.getCodModulo());
+            return IModuloRepo.save(currentModulo);
+        }
+        return null;
+    }
+
+
+    public void deleteModulo(Integer codigo) {
+        IModuloRepo.deleteById(codigo);
+    }
+
+
 
 
 }
