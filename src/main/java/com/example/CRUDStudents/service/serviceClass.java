@@ -4,9 +4,11 @@ package com.example.CRUDStudents.service;
 import com.example.CRUDStudents.Repository.IModuloRepo;
 import com.example.CRUDStudents.Repository.IProfesorRepository;
 import com.example.CRUDStudents.Repository.IStudentRepository;
+import com.example.CRUDStudents.dto.StudentDto;
 import com.example.CRUDStudents.entity.Modulos;
 import com.example.CRUDStudents.entity.Professors;
 import com.example.CRUDStudents.entity.Students;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -166,7 +169,42 @@ public class serviceClass {
         IModuloRepo.deleteById(codigo);
     }
 
+    public Modulos assignModuloToProfessor(Integer moduloId, Integer professorId) {
+        Modulos modulo = IModuloRepo.findById(moduloId).orElse(null);
+        Professors professor = iProfessorRepository.findById(professorId).orElse(null);
 
+        if (modulo != null && professor != null) {
+            modulo.setProfessor(professor);
+            return IModuloRepo.save(modulo);
+        }
+        return null;
+    }
 
+    public List<StudentDto> getStudents() {
+        List<Students> entidades = iStudentRepository.findAll();
+        List<StudentDto> dtos = new ArrayList<>();
+        ModelMapper mapper = new ModelMapper();
+        for(Students student: entidades){
 
+            dtos.add(mapper.map(student, StudentDto.class));
+        }
+
+        return dtos;
+    }
+
+    public Modulos assignStudentsToModulo(Integer moduloId, List<Integer> studentIds) {
+        Modulos modulo = IModuloRepo.findById(moduloId).orElse(null);
+
+        if (modulo != null) {
+            List<Students> students = iStudentRepository.findAllById(studentIds);
+            modulo.getStudents().addAll(students);
+            return IModuloRepo.save(modulo);
+        }
+
+        return null; // Manejar el caso de que el módulo no exista
+    }
 }
+
+
+
+

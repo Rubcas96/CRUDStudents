@@ -1,6 +1,7 @@
 package com.example.CRUDStudents.controller;
 
 import com.example.CRUDStudents.Repository.IStudentRepository;
+import com.example.CRUDStudents.dto.StudentDto;
 import com.example.CRUDStudents.entity.Students;
 import com.example.CRUDStudents.service.serviceClass;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +22,8 @@ public class StudentController {
     @Autowired
     private serviceClass serviceClass;
     @GetMapping("/students")
-    public List<Students> getAllStudents(){
-        return serviceClass.getAllStudents();
+    public List<StudentDto> getAllStudents() {
+        return serviceClass.getStudents();
     }
 
     @PostMapping("/students/new")
