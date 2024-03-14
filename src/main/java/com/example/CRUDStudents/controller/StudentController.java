@@ -1,14 +1,12 @@
 package com.example.CRUDStudents.controller;
 
-import com.example.CRUDStudents.Repository.IStudentRepository;
+
 import com.example.CRUDStudents.dto.StudentDto;
 import com.example.CRUDStudents.entity.Students;
 import com.example.CRUDStudents.service.serviceClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
