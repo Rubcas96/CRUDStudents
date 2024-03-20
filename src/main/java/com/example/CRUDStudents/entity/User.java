@@ -4,23 +4,33 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-@Data
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Entity
+@Data
 @Table(name="users")
-public class User   {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column
     private Long id;
+
     @Column
-    private String name;
+    private String username;
+
     @Column
     private String email;
+
     @Column
     private String password;
+
     @Column
     private boolean enabled;
 
+    @OneToMany(mappedBy = "user")
+    private List<BoeUser> subscriptions;
 
 
     public Long getId() {
@@ -31,12 +41,12 @@ public class User   {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getUsername() {
+        return username;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getEmail() {
@@ -61,5 +71,38 @@ public class User   {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public List<BoeUser> getSubscriptions() {
+        return subscriptions;
+    }
+
+    public void setSubscriptions(List<BoeUser> subscriptions) {
+        this.subscriptions = subscriptions;
+    }
+
+    public void addSubscription(Boe boe) {
+        if (subscriptions == null) {
+            subscriptions = new ArrayList<>();
+        }
+        BoeUser boeUser = new BoeUser();
+        boeUser.setUser(this);
+        boeUser.setBoe(boe);
+        subscriptions.add(boeUser);
+    }
+
+    public void removeSubscription(Boe boe) {
+        if (subscriptions != null) {
+            subscriptions.removeIf(boeUser -> boeUser.getBoe().equals(boe));
+        }
+    }
+
+    public List<Boe> getSubscribedBoes() {
+        if (subscriptions == null) {
+            return Collections.emptyList();
+        }
+        return subscriptions.stream()
+                .map(BoeUser::getBoe)
+                .collect(Collectors.toList());
     }
 }
