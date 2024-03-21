@@ -44,4 +44,19 @@ public class Modulos {
         this.name = name;
     }
 
+    public Professors getProfessor() {
+        return professor;
+    }
+
+    public void setProfessor(Professors professor) {
+        this.professor = professor;
+    }
+
+    public List<Students> getStudents() {
+        return students;
+    }
+
+    public void setStudents(List<Students> students) {
+        this.students = students;
+    }
 }

@@ -28,7 +28,7 @@ public class UserService {
         // Envío de correo electrónico de confirmación
         String to = user.getEmail();
         String subject = "Confirmación de registro";
-        String text = "Hola " + user.getName() + ", tu registro ha sido exitoso.";
+        String text = "Hola " + user.getUsername() + ", tu registro ha sido exitoso.";
         emailSender.sendEmail(to, subject, text);
     }
 
