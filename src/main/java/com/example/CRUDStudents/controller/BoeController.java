@@ -40,18 +40,9 @@ public class BoeController {
         return boeService.obtenerBoeDelDia();
     }
 
-
-
-    @PostMapping("/boe/suscribir")
-    public ResponseEntity<String> suscribirUsuario(@RequestParam("userId") Long userId, @RequestParam("boeId") Long boeId) {
-        try {
-            boeService.suscribirUsuario(userId, boeId);
-            return ResponseEntity.ok("El usuario se ha suscrito correctamente al Boletín Oficial del Estado.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al suscribir al usuario al Boletín Oficial del Estado.");
-        }
+    @DeleteMapping("/boe/delete/all")
+    public void  DeleteALLBoes(){
+        boeService.deleteAllBoes();
     }
-
 
 }

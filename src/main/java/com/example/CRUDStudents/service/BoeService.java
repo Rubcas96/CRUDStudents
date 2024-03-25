@@ -45,7 +45,6 @@ public class BoeService {
     private String model;
 
 
-
     @Autowired
     private RestTemplate template;
 
@@ -93,97 +92,98 @@ public class BoeService {
 
                 // Procesar HTML para extraer texto puro
                 String textoPuro = extraerTextoPuro(htmlContent);
-                System.out.println(textoPuro);
+                comprobarCambiosEnBoe(textoPuro);
 
                 // Resumir el texto utilizando la API de OpenAI
-                String resumen = resumirConChatGpt(textoPuro);
 
-                String fragmentoTexoOriginal = textoPuro.substring(5, 40);
-
-                fragmentoTexoOriginal = "hola es una prueba 6: robocop";
-
-                String fragmentoTexoResumen = resumen.substring(5, 40);
-
-                System.out.println(fragmentoTexoOriginal);
-                System.out.println(fragmentoTexoResumen);
-                System.out.println(fechaActual);
-                System.out.println(fechaFormateada);
-
-                //Fecha y hora para registro del Boe
-                DateTimeFormatter formateoRegistro = DateTimeFormatter.ofPattern("yyyy/MM/dd hh:mm:ss");
-                LocalDateTime fechaRegistro = LocalDateTime.now();
-                String  fechaBoe =  fechaRegistro.format(formateoRegistro);
-
-                fechaActual.format(formatter);
-                System.out.println(fechaBoe);
-
-                // Crear el objeto Boe
-                Boe boe = new Boe();
-                boe.setContenidoOriginal(fragmentoTexoOriginal);
-                boe.setContenidoResumido(fragmentoTexoResumen);
-                boe.setFechaBoe(fechaBoe);
-
-
-
-
-                //-------comprobar si ya esta registrado y guardarlo
-                comprobarCambiosEnBoe(boe);
-                //boeRepository.save(boe); por si la lio descomentar esto y comentar lo de arriba
-                return resumen;
-
-
+                return textoPuro;
             } else {
                 // Manejar errores de solicitud HTTP
                 System.out.println("Error al obtener el BOE del día: " + response.statusCode());
-                return null;
             }
         } catch (Exception e) {
-
             e.printStackTrace();
-            return null;
+
         }
+        return "";
     }
 
 
-
-
-    public void comprobarCambiosEnBoe(Boe boe) {
-        //Ultimo Boe registrado
+    public void comprobarCambiosEnBoe(String textoPuro) {
+        // Obtener el último Boletín Oficial registrado
         Boe ultimoBoe = boeRepository.findTopByOrderByFechaBoeDesc();
-        //comprobar contenido con el obtenido ahora
-        if(boe.getContenidoOriginal().equals(ultimoBoe.getContenidoOriginal())){
-            System.out.println("Este boe ya esta registrado");
-        }else{
-
-            boeRepository.save(boe);
-            // Obtener la lista de usuarios suscritos
-            List<BoeUser> suscriptores = boeUserRepo.findAll();
-
-
-            if (suscriptores.isEmpty()) {
-                System.out.println("No hay suscriptores para el último Boletín Oficial.");
+        if (ultimoBoe == null) {
+            registrarNuevoBoe(textoPuro);
+        } else {
+            // Obtener el fragmento de texto original del texto puro
+            String fragmentoTextoOriginal = textoPuro.substring(5, 40);
+fragmentoTextoOriginal= "true";
+            // Verificar si el fragmento de texto original coincide con el del último Boletín registrado
+            if (fragmentoTextoOriginal.equals(ultimoBoe.getContenidoOriginal())) {
+                System.out.println("Este Boletín Oficial ya está registrado.");
             } else {
-                System.out.println("Suscriptores para el último Boletín Oficial:");
-                for (BoeUser suscriptor : suscriptores) {
-
-                    System.out.println("Usuario: " + suscriptor.getUser().getUsername() + ", Correo: " + suscriptor.getUser().getEmail());
-                }
+                // Registrar el nuevo Boletín Oficial
+                registrarNuevoBoe(textoPuro);
             }
+        }
+    }
+    public void registrarNuevoBoe(String textoPuro) {
+        // Obtener la fecha actual
+        LocalDateTime fechaRegistro = LocalDateTime.now();
+        DateTimeFormatter formateoRegistro = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        String fechaBoe = fechaRegistro.format(formateoRegistro);
 
-            //Enviar mail de notificacion
-            for (BoeUser suscriptor : suscriptores) {
-                User usuario = suscriptor.getUser();
+        // Resumir el texto utilizando la API de OpenAI
+        String resumen = resumirConChatGpt(textoPuro);
+
+        // Obtener los fragmentos de texto original y resumen
+        String fragmentoTextoOriginal = textoPuro.substring(5, Math.min(textoPuro.length(), 40));
+
+
+        // Crear el objeto Boe
+        Boe boe = new Boe();
+        boe.setContenidoOriginal(fragmentoTextoOriginal);
+        boe.setContenidoResumido(resumen);
+        boe.setFechaBoe(fechaBoe);
+
+        // Guardar el nuevo Boletín Oficial en la base de datos
+        boeRepository.save(boe);
+
+        // Notificar a los suscriptores del nuevo Boletín Oficial
+        notificarNuevoBoeASuscriptores(resumen);
+        crearBoeUserParaUsuariosConSendNotification(boe, userRepository.findAll());
+    }
+
+    private void notificarNuevoBoeASuscriptores(String resumen) {
+        // Obtener todos los usuarios
+        List<User> usuarios = userRepository.findAll();
+
+        for (User usuario : usuarios) {
+            // Verificar si el usuario tiene la opción sendNotification seleccionada
+            if (usuario.isSendNotification()) {
                 String to = usuario.getEmail();
                 String subject = "Nuevo Boletín Oficial disponible";
-                String text = "Estimado " + usuario.getUsername() + ",\n\nSe ha detectado un nuevo Boletín Oficial. Puedes revisarlo en el sitio web.";
+                String text = "Estimado " + usuario.getUsername() + ",\n\nSe ha detectado un nuevo Boletín Oficial. Le enviamos el resumen: \n\n"+resumen;
                 emailSender.sendEmail(to, subject, text);
+
+                System.out.println("Correo enviado a: " + usuario.getEmail());
             }
-
-
-
         }
-
     }
+
+    public void crearBoeUserParaUsuariosConSendNotification(Boe boe, List<User> usuarios) {
+        // Crear y guardar un objeto BoeUser para cada usuario con sendNotification activo
+        for (User usuario : usuarios) {
+            // Verificar si el usuario tiene sendNotification activo
+            if (usuario.isSendNotification()) {
+                BoeUser boeUser = new BoeUser();
+                boeUser.setBoe(boe);
+                boeUser.setUser(usuario);
+                boeUserRepo.save(boeUser);
+            }
+        }
+    }
+
 
     private String extraerTextoPuro(String htmlContent) {
         // Parsear el contenido HTML utilizando Jsoup
@@ -228,7 +228,9 @@ public class BoeService {
         }
     }
 
-
+public void deleteAllBoes(){
+        boeRepository.deleteAll();
+}
 
     }
 
