@@ -22,7 +22,7 @@ public class UserController {
     }
 
     @GetMapping("/user/info")
-    public ResponseEntity<String> getUserInfo(@RequestHeader Long userId) {
+    public ResponseEntity<String> getUserInfo(@RequestParam Long userId) {
         User user = userService.getUserById(userId);
         if (user != null) {
             return new ResponseEntity<>("Información del usuario: " + user.toString(), HttpStatus.OK);
@@ -30,4 +30,28 @@ public class UserController {
             return new ResponseEntity<>("Usuario no encontrado", HttpStatus.NOT_FOUND);
         }
     }
+
+    @PostMapping("/user/suscribir")
+    public ResponseEntity<String> suscribirUsuario(@RequestParam("userId") Long userId) {
+        try {
+            userService.suscribirUsuario(userId);
+            return ResponseEntity.ok("El usuario se ha suscrito correctamente al Boletín Oficial del Estado.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al suscribir al usuario al Boletín Oficial del Estado.");
+        }
+    }
+
+    @DeleteMapping("/user/delete")
+    public void deleteUser(@RequestParam Long userId){
+        userService.deleteUserById(userId);
+    }
+
+
+    @DeleteMapping("/user/delete/all")
+    public void deleteAllUsers(@RequestParam Long userId){
+        userService.deleteAllUser();
+    }
+
+
 }

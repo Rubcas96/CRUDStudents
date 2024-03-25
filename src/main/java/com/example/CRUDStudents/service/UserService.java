@@ -6,6 +6,9 @@ import com.example.CRUDStudents.mail.EmailSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -22,18 +25,54 @@ public class UserService {
     }
 
     public void registerUser(User user) {
-        // Lógica para registrar al usuario
-        userRepository.save(user);
+        // Guardar usuario en la base de datos
+        User savedUser = userRepository.save(user);
 
-        // Envío de correo electrónico de confirmación
+        // Enviar correo electrónico de confirmación
+        enviarCorreoConfirmacion(savedUser);
+    }
+
+    private void enviarCorreoConfirmacion(User user) {
         String to = user.getEmail();
         String subject = "Confirmación de registro";
         String text = "Hola " + user.getUsername() + ", tu registro ha sido exitoso.";
         emailSender.sendEmail(to, subject, text);
     }
 
+    @Transactional
+    public void suscribirUsuario(Long userId) {
+        // Obtener el usuario y el boletín oficial correspondientes
+        Optional<User> optionalUser = userRepository.findById(userId);
+
+
+        // Verificar si el usuario existe
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            user.setSendNotification(true);
+
+
+            // Envío de correo electrónico de notificacion
+            String to = user.getEmail();
+            String subject = "Confirmación de registro";
+            String text = "Hola " + user.getUsername() + ", te has suscrito a Boe Newsletter.";
+            emailSender.sendEmail(to, subject, text);
+
+        } else {
+            throw new RuntimeException("El usuario o el Boletín Oficial especificados no existen.");
+        }
+    }
+
+
     public User getUserById(Long userId) {
         return userRepository.findById(userId).orElse(null);
     }
 
+
+    public void  deleteUserById(Long userId){
+        userRepository.deleteById(userId);
+    }
+
+    public void deleteAllUser(){
+        userRepository.deleteAll();
+    }
 }

@@ -27,7 +27,7 @@ public class User {
     private String password;
 
     @Column
-    private boolean enabled;
+    private boolean sendNotification = false;
 
     @OneToMany(mappedBy = "user")
     private List<BoeUser> subscriptions;
@@ -65,14 +65,6 @@ public class User {
         this.password = password;
     }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
     public List<BoeUser> getSubscriptions() {
         return subscriptions;
     }
@@ -81,28 +73,12 @@ public class User {
         this.subscriptions = subscriptions;
     }
 
-    public void addSubscription(Boe boe) {
-        if (subscriptions == null) {
-            subscriptions = new ArrayList<>();
-        }
-        BoeUser boeUser = new BoeUser();
-        boeUser.setUser(this);
-        boeUser.setBoe(boe);
-        subscriptions.add(boeUser);
+
+    public boolean isSendNotification() {
+        return sendNotification;
     }
 
-    public void removeSubscription(Boe boe) {
-        if (subscriptions != null) {
-            subscriptions.removeIf(boeUser -> boeUser.getBoe().equals(boe));
-        }
-    }
-
-    public List<Boe> getSubscribedBoes() {
-        if (subscriptions == null) {
-            return Collections.emptyList();
-        }
-        return subscriptions.stream()
-                .map(BoeUser::getBoe)
-                .collect(Collectors.toList());
+    public void setSendNotification(boolean sendNotification) {
+        this.sendNotification = sendNotification;
     }
 }

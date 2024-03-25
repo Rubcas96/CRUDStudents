@@ -54,6 +54,8 @@ public class BoeService {
 
     @Autowired
     private IUserRepository userRepository;
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private IBoeUser boeUserRepo;
@@ -121,8 +123,12 @@ public class BoeService {
                 boe.setContenidoResumido(fragmentoTexoResumen);
                 boe.setFechaBoe(fechaBoe);
 
+
+
+
                 //-------comprobar si ya esta registrado y guardarlo
                 comprobarCambiosEnBoe(boe);
+                //boeRepository.save(boe); por si la lio descomentar esto y comentar lo de arriba
                 return resumen;
 
 
@@ -159,8 +165,6 @@ public class BoeService {
             } else {
                 System.out.println("Suscriptores para el último Boletín Oficial:");
                 for (BoeUser suscriptor : suscriptores) {
-
-                    suscribirUsuario(suscriptor.getUser().getId(),ultimoBoe.getId());
 
                     System.out.println("Usuario: " + suscriptor.getUser().getUsername() + ", Correo: " + suscriptor.getUser().getEmail());
                 }
@@ -225,35 +229,6 @@ public class BoeService {
     }
 
 
-    @Transactional
-    public void suscribirUsuario(Long userId, Long boeId) {
-        // Obtener el usuario y el boletín oficial correspondientes
-        Optional<User> optionalUser = userRepository.findById(userId);
-        Optional<Boe> optionalBoe = boeRepository.findById(boeId);
 
-        // Verificar si el usuario y el boletín oficial existen
-        if (optionalUser.isPresent() && optionalBoe.isPresent()) {
-            User user = optionalUser.get();
-            Boe boe = optionalBoe.get();
-
-            // Verificar si el usuario ya está suscrito al boletín oficial
-            List<Boe> userSubscriptions = user.getSubscribedBoes();
-            if (userSubscriptions.contains(boe)) {
-                throw new RuntimeException("El usuario ya está suscrito a este Boletín Oficial.");
-            }
-
-            // Crear la suscripción del usuario al boletín oficial
-            BoeUser boeUser = new BoeUser();
-            boeUser.setUser(user);
-            boeUser.setBoe(boe);
-
-            // Guardar la suscripción en la base de datos
-            boeUserRepo.save(boeUser);
-        } else {
-            throw new RuntimeException("El usuario o el Boletín Oficial especificados no existen.");
-        }
-
-
-    }
     }
 
