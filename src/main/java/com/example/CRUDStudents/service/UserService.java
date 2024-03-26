@@ -15,9 +15,6 @@ public class UserService {
     @Autowired
     private IUserRepository userRepository;
 
-    private PasswordEncoder passwordEncoder;
-
-
     private final EmailSender emailSender;
 
     public UserService(EmailSender emailSender) {

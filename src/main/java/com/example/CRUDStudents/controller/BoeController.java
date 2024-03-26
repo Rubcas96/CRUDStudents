@@ -34,11 +34,6 @@ public class BoeController {
         return chatGptResponse.getChoices().get(0).getMessage().getContent();
     }
 
-    @Transactional
-    @PostMapping("/boe/resumen")
-    public String obtenerResumenBoeDelDia() {
-        return boeService.obtenerBoeDelDia();
-    }
 
     @DeleteMapping("/boe/delete/all")
     public void  DeleteALLBoes(){
