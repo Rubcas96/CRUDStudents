@@ -53,8 +53,32 @@ public class UserService {
 
             // Envío de correo electrónico de notificacion
             String to = user.getEmail();
-            String subject = "Confirmación de registro";
+            String subject = "Suscripción";
             String text = "Hola " + user.getUsername() + ", te has suscrito a Boe Newsletter.";
+            emailSender.sendEmail(to, subject, text);
+
+        } else {
+            throw new RuntimeException("El usuario o el Boletín Oficial especificados no existen.");
+        }
+    }
+
+
+    @Transactional
+    public void darBaja(Long userId) {
+        // Obtener el usuario y el boletín oficial correspondientes
+        Optional<User> optionalUser = userRepository.findById(userId);
+
+
+        // Verificar si el usuario existe
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            user.setSendNotification(false);
+
+
+            // Envío de correo electrónico de notificacion
+            String to = user.getEmail();
+            String subject = "Suscripción";
+            String text = "Hola " + user.getUsername() + ", te has dado de baja del Boe Newsletter.";
             emailSender.sendEmail(to, subject, text);
 
         } else {
@@ -68,11 +92,17 @@ public class UserService {
     }
 
 
-    public void  deleteUserById(Long userId){
+    public void deleteUserById(Long userId) {
         userRepository.deleteById(userId);
     }
 
-    public void deleteAllUser(){
+    public void deleteAllUser() {
         userRepository.deleteAll();
     }
+
+    public User findByUsernameAndPassword(String username, String password) {
+        return userRepository.findByUsernameAndPassword(username, password);
+
+    }
+
 }

@@ -3,6 +3,7 @@ package com.example.CRUDStudents.controller;
 import com.example.CRUDStudents.entity.User;
 import com.example.CRUDStudents.service.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,13 +33,46 @@ public class UserController {
     }
 
     @PostMapping("/user/suscribir")
-    public ResponseEntity<String> suscribirUsuario(@RequestParam("userId") Long userId) {
+    public ResponseEntity<String> suscribirUsuario(HttpServletRequest request) {
+        String userIdHeader = request.getHeader("X-User-Id");
+        if (userIdHeader != null && !userIdHeader.isEmpty()) {
+            try {
+                Long userId = Long.parseLong(userIdHeader);
+                userService.suscribirUsuario(userId);
+                return ResponseEntity.ok("El usuario se ha suscrito correctamente al Boletín Oficial del Estado.");
+            } catch (NumberFormatException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("El encabezado X-User-Id no contiene un ID de usuario válido.");
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Error al suscribir al usuario al Boletín Oficial del Estado.");
+            }
+        } else {
+            return new ResponseEntity<>("El encabezado X-User-Id es requerido", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("/user/baja")
+    public ResponseEntity<String> darBaja(HttpServletRequest request) {
+        // Obtener el ID del usuario del header
+        String userIdHeader = request.getHeader("X-User-Id");
+        if (userIdHeader == null || userIdHeader.isEmpty()) {
+            // No se proporcionó un ID de usuario en el header, devuelve un error de autorización
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Se requiere autenticación para realizar esta acción.");
+        }
+
         try {
-            userService.suscribirUsuario(userId);
-            return ResponseEntity.ok("El usuario se ha suscrito correctamente al Boletín Oficial del Estado.");
+            Long userId = Long.parseLong(userIdHeader);
+            userService.darBaja(userId);
+            return ResponseEntity.ok("El usuario se ha dado de baja correctamente del Boletín Oficial del Estado.");
+        } catch (NumberFormatException e) {
+            // El ID del usuario en el header no es un número válido
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("El ID de usuario proporcionado en el header no es válido.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al suscribir al usuario al Boletín Oficial del Estado.");
+                    .body("Error al darse de baja el usuario del Boletín Oficial del Estado.");
         }
     }
 

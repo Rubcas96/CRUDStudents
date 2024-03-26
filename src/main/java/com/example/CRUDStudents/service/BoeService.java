@@ -117,7 +117,7 @@ public class BoeService {
         } else {
             // Obtener el fragmento de texto original del texto puro
             String fragmentoTextoOriginal = textoPuro.substring(5, 40);
-fragmentoTextoOriginal= "true";
+
             // Verificar si el fragmento de texto original coincide con el del último Boletín registrado
             if (fragmentoTextoOriginal.equals(ultimoBoe.getContenidoOriginal())) {
                 System.out.println("Este Boletín Oficial ya está registrado.");
@@ -233,4 +233,5 @@ public void deleteAllBoes(){
 }
 
     }
+
 
