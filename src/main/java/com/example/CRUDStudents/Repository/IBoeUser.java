@@ -8,6 +8,4 @@ import java.util.List;
 
 public interface IBoeUser extends JpaRepository<BoeUser, Long> {
 
-
-    List<BoeUser> findByBoe(Boe ultimoBoe);
 }

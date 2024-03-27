@@ -1,8 +1,11 @@
 package com.example.CRUDStudents.service;
 
+import com.example.CRUDStudents.Repository.IBoeRepository;
 import com.example.CRUDStudents.Repository.IUserRepository;
+import com.example.CRUDStudents.entity.Boe;
 import com.example.CRUDStudents.entity.User;
 import com.example.CRUDStudents.mail.EmailSender;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,6 +17,9 @@ import java.util.Optional;
 public class UserService {
     @Autowired
     private IUserRepository userRepository;
+
+    @Autowired
+    private IBoeRepository boeRepository;
 
     private final EmailSender emailSender;
 
@@ -82,7 +88,6 @@ public class UserService {
             throw new RuntimeException("El usuario o el Boletín Oficial especificados no existen.");
         }
     }
-
 
     public User getUserById(Long userId) {
         return userRepository.findById(userId).orElse(null);

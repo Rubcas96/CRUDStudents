@@ -9,6 +9,7 @@ import com.example.CRUDStudents.entity.Boe;
 import com.example.CRUDStudents.entity.BoeUser;
 import com.example.CRUDStudents.entity.User;
 import com.example.CRUDStudents.mail.EmailSender;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 
 import org.jsoup.Jsoup;
@@ -205,7 +206,75 @@ public class BoeService {
         return texto;
     }
 
+    public Long getUserIdFromHeader(HttpServletRequest request) {
 
+        String userIdHeader = request.getHeader("X-User-Id");
+
+        if (userIdHeader != null && !userIdHeader.isEmpty()) {
+            try {
+                return Long.parseLong(userIdHeader);
+            } catch (NumberFormatException e) {
+                System.out.println("El encabezado X-User-Id contiene un ID de usuario no válido");
+            }
+        }
+
+        return null;
+    }
+
+    public void solicitarBoe(HttpServletRequest request, Long boeId) {
+        // Obtener el ID del usuario autenticado
+        Long userId = getUserIdFromHeader(request);
+
+        if (userId != null) {
+            // Obtener el usuario a partir del ID
+            User user = userRepository.findById(userId).orElse(null);
+
+            if (user != null) {
+                // Obtener el BOE a partir del ID
+                Boe boe = boeRepository.findById(boeId).orElse(null);
+
+                if (boe != null) {
+                    // Enviar el resumen del BOE al correo electrónico del usuario
+                    String to = user.getEmail();
+                    String subject = "Boe Solicitado nº"+boe.getId();
+                    String text = "Estimado " + user.getUsername() + ",\n\n Le enviamos el resumen del BOE que ha solicitado: \n\n"+boe.getContenidoResumido();
+                    emailSender.sendEmail(to, subject, text);
+                    System.out.println("Resumen del BOE enviado al correo electrónico del usuario");
+                } else {
+                    System.out.println("No se encontró ningún BOE con el ID proporcionado");
+                }
+            } else {
+                System.out.println("No se encontró ningún usuario con el ID proporcionado");
+            }
+        } else {
+            System.out.println("Usuario no autenticado");
+        }
+    }
+
+
+    public void sendUnsubscribedBoeSummaryToUser(Long userId) {
+        // Obtener boletines a los que el usuario no está suscrito
+        List<Boe> unsubscribedBoes = boeRepository.findNotSubscribedBoes(userId);
+
+        // Verificar si se encontraron boletines
+        if (!unsubscribedBoes.isEmpty()) {
+            // Construir el mensaje con los resúmenes de los boletines
+            StringBuilder message = new StringBuilder();
+            message.append("Estimado usuario,\n\n");
+            message.append("Aquí tienes los resúmenes de los boletines a los que no estás suscrito:\n\n");
+
+            for (Boe boe : unsubscribedBoes) {
+                message.append("ID: ").append(boe.getId()).append("\n");
+                message.append("Contenido: ").append(boe.getContenidoResumido()).append("\n\n");
+            }
+
+            // Enviar el mensaje por correo electrónico al usuario
+            Optional<User> user = userRepository.findById(userId);
+                    String to = user.map(User::getEmail).orElse(null);
+            String subject = "Resúmenes de boletines no suscritos";
+            emailSender.sendEmail(to, subject, message.toString());
+        }
+    }
 
 
     private String resumirConChatGpt(String texto) {
